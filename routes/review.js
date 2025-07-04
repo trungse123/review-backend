@@ -9,7 +9,7 @@ const router = express.Router();
 // Cấu hình lưu file upload local
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, 'uploads/'); // Thư mục lưu file
+    cb(null, 'uploads/');
   },
   filename: function (req, file, cb) {
     const ext = path.extname(file.originalname);
@@ -56,7 +56,8 @@ router.post(
 
       const review = await Review.create({
         productId, name, phone, email, title, content, rating,
-        imageUrls, videoUrl, isPurchased, status
+        imageUrls, videoUrl, isPurchased, status,
+        replies: [] // Khởi tạo mảng replies rỗng
       });
 
       res.json({ message: 'Gửi đánh giá thành công!', review });
@@ -66,13 +67,30 @@ router.post(
   }
 );
 
+// API trả lời bình luận cho review (bất kỳ ai cũng trả lời được)
+router.post('/reply/:id', async (req, res) => {
+  const { id } = req.params;
+  const { name, content } = req.body;
+  if (!name || !content) {
+    return res.status(400).json({ message: 'Tên và nội dung trả lời là bắt buộc!' });
+  }
+  // Thêm trả lời vào mảng replies
+  const result = await Review.findByIdAndUpdate(
+    id,
+    { $push: { replies: { name, content, createdAt: new Date() } } },
+    { new: true }
+  );
+  if (!result) return res.status(404).json({ message: 'Không tìm thấy review!' });
+  res.json({ message: 'Đã trả lời bình luận!', review: result });
+});
+
 // API lấy review đã duyệt theo sản phẩm, phân trang, filter/sort theo số sao
 router.get('/product/:productId', async (req, res) => {
   const { productId } = req.params;
   const { page = 1, limit = 5, rating, sort = '-createdAt' } = req.query;
 
   const query = { productId, status: 'approved' };
-  if (rating) query.rating = Number(rating); // Lọc theo số sao nếu có
+  if (rating) query.rating = Number(rating);
 
   const reviews = await Review.find(query)
     .sort(sort)

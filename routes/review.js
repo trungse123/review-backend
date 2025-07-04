@@ -66,12 +66,16 @@ router.post(
   }
 );
 
-// API lấy review đã duyệt theo sản phẩm, phân trang
+// API lấy review đã duyệt theo sản phẩm, phân trang, filter/sort theo số sao
 router.get('/product/:productId', async (req, res) => {
   const { productId } = req.params;
-  const { page = 1, limit = 5 } = req.query;
-  const reviews = await Review.find({ productId, status: 'approved' })
-    .sort({ createdAt: -1 })
+  const { page = 1, limit = 5, rating, sort = '-createdAt' } = req.query;
+
+  const query = { productId, status: 'approved' };
+  if (rating) query.rating = Number(rating); // Lọc theo số sao nếu có
+
+  const reviews = await Review.find(query)
+    .sort(sort)
     .skip((page - 1) * limit)
     .limit(Number(limit));
   res.json(reviews);

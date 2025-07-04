@@ -25,6 +25,3 @@ mongoose.connect(MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
   .catch(err => {
     console.error('Mongo error', err);
   });
-app.get('/ping', (req, res) => {
-  res.send('pong');
-});

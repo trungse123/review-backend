@@ -105,5 +105,32 @@ router.post('/approve/:id', async (req, res) => {
   await Review.findByIdAndUpdate(id, { status: 'approved' });
   res.json({ message: 'Đã duyệt review!' });
 });
+// API tổng hợp rating cho 1 sản phẩm
+router.get('/summary/:productId', async (req, res) => {
+  const { productId } = req.params;
+  // Lấy review đã duyệt
+  const reviews = await Review.find({ productId, status: 'approved' });
+  const total = reviews.length;
+  let sum = 0;
+  const counts = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+  reviews.forEach(r => {
+    const star = Math.round(Number(r.rating) || 0);
+    if (star >= 1 && star <= 5) {
+      counts[star]++;
+      sum += star;
+    }
+  });
+  const avgRating = total ? (sum / total) : 0;
+  res.json({
+    productId,
+    avgRating: Number(avgRating.toFixed(1)),
+    total,
+    count_5: counts[5],
+    count_4: counts[4],
+    count_3: counts[3],
+    count_2: counts[2],
+    count_1: counts[1]
+  });
+});
 
 module.exports = router;

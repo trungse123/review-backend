@@ -90,6 +90,5 @@ async function hasPurchasedProduct(customerPhone, productIdToFind) {
     }
     return false;
 }
-}
 
 module.exports = { hasPurchasedProduct };

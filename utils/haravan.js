@@ -35,11 +35,13 @@ async function hasPurchasedProduct(customerPhone, productIdToFind) {
         // Lấy customer_id của khách hàng đầu tiên tìm được
         const customerId = customers[0].id;
 
-        // --- BƯỚC 2: LẤY TẤT CẢ ĐƠN HÀNG CỦA CUSTOMER ID ĐÓ ---
-        // Sử dụng status=any để lấy tất cả đơn hàng, sau đó lọc thủ công
-        const ordersUrl = `https://${SHOP_DOMAIN}/admin/customers/${customerId}/orders.json`;
+        // --- BƯỚC 2: LẤY TẤT CẢ ĐƠN HÀNG CỦA CUSTOMER ID ĐÓ BẰNG CÁCH LỌC QUA customer_id ---
+        const ordersUrl = `https://${SHOP_DOMAIN}/admin/orders.json`; // Sử dụng endpoint chung cho orders
         const ordersResp = await axios.get(ordersUrl, {
-            params: { status: 'any' }, // Lấy tất cả trạng thái để kiểm tra thủ công
+            params: {
+                customer_id: customerId, // Lọc đơn hàng theo customer_id
+                status: 'any' // Lấy tất cả trạng thái để kiểm tra thủ công
+            },
             headers: { 'Authorization': `Bearer ${ACCESS_TOKEN}` }
         });
 

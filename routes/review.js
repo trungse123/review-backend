@@ -198,5 +198,76 @@ router.get('/count', async (req, res) => {
         res.status(500).json({ message: 'Lỗi server khi lấy số lượng review.' });
     }
 });
+// === API LẤY TẤT CẢ REVIEW (CHO ADMIN) - KHÔNG CẦN XÁC THỰC ===
+router.get('/admin/reviews', async (req, res) => { // Đã bỏ authenticateAdmin
+    try {
+        const { page = 1, limit = 10, status, search, sort = '-createdAt' } = req.query;
+
+        let query = {};
+        if (status) query.status = status;
+        if (search) {
+            query.$or = [
+                { name: { $regex: search, $options: 'i' } },
+                { content: { $regex: search, $options: 'i' } },
+                { title: { $regex: search, $options: 'i' } },
+                { phone: { $regex: search, '$options': 'i' } } // Đảm bảo phone cũng được tìm kiếm
+            ];
+        }
+
+        const reviews = await Review.find(query)
+            .sort(sort)
+            .skip((page - 1) * limit)
+            .limit(Number(limit));
+
+        const totalReviews = await Review.countDocuments(query);
+
+        res.json({
+            reviews,
+            totalReviews,
+            currentPage: Number(page),
+            totalPages: Math.ceil(totalReviews / Number(limit))
+        });
+    } catch (error) {
+        console.error('[Admin Review API] Lỗi khi lấy tất cả review:', error.message);
+        res.status(500).json({ message: 'Lỗi server khi lấy review.' });
+    }
+});
+
+// === API XÓA REVIEW (CHO ADMIN) - KHÔNG CẦN XÁC THỰC ===
+router.delete('/admin/reviews/:id', async (req, res) => { // Đã bỏ authenticateAdmin
+    try {
+        const { id } = req.params;
+        const result = await Review.findByIdAndDelete(id);
+        if (!result) {
+            return res.status(404).json({ message: 'Không tìm thấy review để xóa.' });
+        }
+        res.json({ message: 'Review đã được xóa thành công.' });
+    } catch (error) {
+        console.error(`[Admin Review API] Lỗi khi xóa review ID ${req.params.id}:`, error.message);
+        res.status(500).json({ message: 'Lỗi server khi xóa review.' });
+    }
+});
+
+// === API CẬP NHẬT TRẠNG THÁI REVIEW (DUYỆT/TỪ CHỐI - CHO ADMIN) - KHÔNG CẦN XÁC THỰC ===
+// Giữ nguyên API này nếu bạn vẫn muốn tùy chọn duyệt thủ công ngoài duyệt tự động
+router.put('/admin/reviews/:id/status', async (req, res) => { // Đã bỏ authenticateAdmin
+    try {
+        const { id } = req.params;
+        const { status } = req.body;
+
+        if (!['approved', 'pending', 'rejected'].includes(status)) {
+            return res.status(400).json({ message: 'Trạng thái không hợp lệ.' });
+        }
+
+        const result = await Review.findByIdAndUpdate(id, { status: status }, { new: true });
+        if (!result) {
+            return res.status(404).json({ message: 'Không tìm thấy review.' });
+        }
+        res.json({ message: `Trạng thái review đã được cập nhật thành ${status}.`, review: result });
+    } catch (error) {
+        console.error(`[Admin Review API] Lỗi khi cập nhật trạng thái review ID ${req.params.id}:`, error.message);
+        res.status(500).json({ message: 'Lỗi server khi cập nhật trạng thái.' });
+    }
+});
 
 module.exports = router; // Export router để được sử dụng trong file app.js chính

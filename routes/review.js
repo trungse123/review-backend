@@ -3,7 +3,7 @@ const multer = require('multer');
 const path = require('path');
 const Review = require('../models/Review');
 const { hasPurchasedProduct } = require('../utils/haravan');
-
+const axios = require('axios')
 const router = express.Router();
 
 // Cấu hình lưu file upload local
@@ -59,6 +59,24 @@ router.post(
         imageUrls, videoUrl, isPurchased, status,
         replies: [] // Khởi tạo mảng replies rỗng
       });
+       // 2. Nếu lưu thành công, chủ động gọi sang backend điểm thưởng
+            if (review) { // Kiểm tra xem review đã được lưu thành công hay chưa
+                try {
+                    // URL của API hoàn thành nhiệm vụ trên backend điểm thưởng
+                    const loyaltyApiUrl = 'https://loyalty-point-app-2.onrender.com/missions/complete';
+
+                    await axios.post(loyaltyApiUrl, {
+                        phone: phone, // Sử dụng phone từ req.body
+                        mission_key: 'review_product' // Gửi đúng key của nhiệm vụ đánh giá
+                    });
+
+                    console.log(`Đã gửi yêu cầu cộng điểm cho SĐT: ${phone}`);
+
+                } catch (error) {
+                    // Ghi lại lỗi nhưng không ảnh hưởng đến người dùng
+                    console.error('Lỗi khi kích hoạt cộng điểm:', error.message);
+                }
+            }
 
       res.json({ message: 'Gửi đánh giá thành công!', review });
     } catch (error) {
@@ -66,6 +84,7 @@ router.post(
     }
   }
 );
+
 
 // API trả lời bình luận cho review (bất kỳ ai cũng trả lời được)
 router.post('/reply/:id', async (req, res) => {

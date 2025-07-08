@@ -76,65 +76,6 @@ router.post(
                 replies: [] // Khởi tạo mảng replies rỗng
             });
 
-            // === Gọi sang Backend Điểm thưởng để cộng điểm ===
-            // Đoạn mã này nằm trong backend ĐÁNH GIÁ của bạn
-            if (review) { // Kiểm tra xem review đã được lưu thành công hay chưa
-                try {
-                    // URL của API hoàn thành nhiệm vụ trên backend điểm thưởng
-                    // Đảm bảo URL này là CHÍNH XÁC của Backend Điểm thưởng của bạn
-                    const loyaltyApiUrl = 'https://loyalty-point-app-2.onrender.com/missions/complete';
-
-                    await axios.post(loyaltyApiUrl, {
-                        phone: phone, // Sử dụng phone từ req.body
-                        mission_key: 'review_product' // Gửi đúng key của nhiệm vụ đánh giá
-                    });
-
-                    console.log(`[Review Backend] Đã gửi yêu cầu cộng điểm cho SĐT: ${phone}`);
-
-                } catch (error) {
-                    // Ghi lại lỗi nhưng không làm gián đoạn luồng chính của người dùng
-                    console.error('[Review Backend] Lỗi khi kích hoạt cộng điểm:', error.message);
-                }
-            }
-
-            // === Trả về thông báo thành công cho người dùng ===
-            res.status(201).json({ message: 'Gửi đánh giá thành công!', review });
-
-        } catch (error) {
-            // Xử lý lỗi chung trong quá trình tạo review
-            console.error('[Review Backend] Lỗi khi tạo review:', error.message);
-            res.status(500).json({ message: error.message });
-        }
-    }
-);
-
-// === API trả lời bình luận cho review (bất kỳ ai cũng trả lời được) ===
-router.post('/reply/:id', async (req, res) => {
-    const { id } = req.params; // Lấy ID của review từ URL
-    const { name, content } = req.body; // Lấy tên và nội dung phản hồi
-
-    // Kiểm tra các trường bắt buộc
-    if (!name || !content) {
-        return res.status(400).json({ message: 'Tên và nội dung trả lời là bắt buộc!' });
-    }
-
-    try {
-        // Thêm phản hồi vào mảng replies của review
-        const result = await Review.findByIdAndUpdate(
-            id,
-            { $push: { replies: { name, content, createdAt: new Date() } } },
-            { new: true } // Trả về document sau khi cập nhật
-        );
-
-        // Nếu không tìm thấy review
-        if (!result) return res.status(404).json({ message: 'Không tìm thấy review!' });
-
-        res.json({ message: 'Đã trả lời bình luận!', review: result });
-    } catch (error) {
-        console.error('[Review Backend] Lỗi khi trả lời bình luận:', error.message);
-        res.status(500).json({ message: error.message });
-    }
-});
 
 // === API lấy review đã duyệt theo sản phẩm, phân trang, filter/sort theo số sao ===
 router.get('/product/:productId', async (req, res) => {

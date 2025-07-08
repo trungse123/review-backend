@@ -1,7 +1,7 @@
 // utils/haravan.js
 const axios = require('axios');
 
-const ACCESS_TOKEN = process.env.HARAVAN_ACCESS_TOKEN || 'DFE528F8C4CBA1B43727A729CD57187766E059E88AE96682DC2CF04AF4F61306';
+const ACCESS_TOKEN = process.env.HARAVAN_ACCESS_TOKEN || '8D69E2B91FDF0D073CAC0126CCA36B924276EB0DFF55C7F76097CFD8283920BE';
 // URL dưới đây chỉ là ví dụ, hãy thay bằng đúng endpoint của Haravan (nếu khác)
 const SHOP_DOMAIN = process.env.HARAVAN_SHOP_DOMAIN || 'neko-chin-shop-5.myharavan.com'; // hoặc domain shop thật
 

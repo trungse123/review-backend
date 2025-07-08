@@ -75,8 +75,16 @@ router.post(
                 imageUrls, videoUrl, isPurchased, status,
                 replies: [] // Khởi tạo mảng replies rỗng
             });
+        // === Trả về thông báo thành công cho người dùng ===
+        res.status(201).json({ message: 'Gửi đánh giá thành công!', review });
 
-
+    } catch (error) {
+        // Xử lý lỗi chung trong quá trình tạo review
+        console.error('[Review Backend] Lỗi khi tạo review:', error.message);
+        res.status(500).json({ message: error.message });
+    }
+}
+);
 // === API lấy review đã duyệt theo sản phẩm, phân trang, filter/sort theo số sao ===
 router.get('/product/:productId', async (req, res) => {
     const { productId } = req.params; // Lấy productId từ URL

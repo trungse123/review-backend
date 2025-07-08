@@ -73,10 +73,23 @@ async function hasPurchasedProduct(customerPhone, productIdToFind) {
         return false;
 
     } catch (err) {
-        // Ghi lại lỗi chi tiết hơn từ Haravan API response
-        console.error('Lỗi kiểm tra đơn hàng (chi tiết):', err.response ? err.response.data : err.message);
-    return false;
+    console.error(`[Haravan Util] Lỗi kiểm tra mua hàng cho SĐT ${customerPhone}, SP ${productIdToFind} (chi tiết):`);
+    // In ra toàn bộ đối tượng lỗi để không bỏ sót thông tin
+    console.error(err);
+    // Nếu là lỗi Axios, in thêm phản hồi từ server nếu có
+    if (err.response) {
+        console.error('Haravan API Response Error Data:', err.response.data);
+        console.error('Haravan API Response Status:', err.response.status);
+        console.error('Haravan API Response Headers:', err.response.headers);
+    } else if (err.request) {
+        // Request được tạo nhưng không nhận được phản hồi (ví dụ: mạng)
+        console.error('Haravan API Request Error (no response):', err.request);
+    } else {
+        // Lỗi khi thiết lập request
+        console.error('Haravan API Config/Setup Error:', err.message);
     }
+    return false;
+}
 }
 
 module.exports = { hasPurchasedProduct };

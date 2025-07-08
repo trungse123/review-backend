@@ -151,5 +151,41 @@ router.get('/summary/:productId', async (req, res) => {
     count_1: counts[1]
   });
 });
+// API để Backend Điểm thưởng gọi lấy số lượng review thực tế của người dùng
+router.get('/count', async (req, res) => {
+    const { phone } = req.query;
+    if (!phone) {
+        return res.status(400).json({ message: 'Thiếu số điện thoại!' });
+    }
 
+    try {
+        const now = new Date();
+        const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+
+        // Đếm số review trong ngày hiện tại
+        const reviewsToday = await Review.countDocuments({
+            phone: phone,
+            createdAt: { $gte: startOfDay, $lt: endOfDay },
+            status: 'approved' // Chỉ đếm review đã được duyệt
+        });
+
+        // Đếm số review trong tháng hiện tại
+        const reviewsMonthly = await Review.countDocuments({
+            phone: phone,
+            createdAt: { $gte: startOfMonth, $lt: endOfMonth },
+            status: 'approved' // Chỉ đếm review đã được duyệt
+        });
+
+        res.json({
+            today: reviewsToday,
+            monthly: reviewsMonthly
+        });
+    } catch (error) {
+        console.error('Lỗi khi lấy số lượng review:', error.message);
+        res.status(500).json({ message: 'Lỗi server khi lấy số lượng review.' });
+    }
+});
 module.exports = router;

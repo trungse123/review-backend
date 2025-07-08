@@ -74,8 +74,8 @@ async function hasPurchasedProduct(customerPhone, productIdToFind) {
 
     } catch (err) {
         // Ghi lại lỗi chi tiết hơn từ Haravan API response
-        console.error(`[Haravan Util] Lỗi khi kiểm tra mua hàng (SĐT: ${customerPhone}, SP: ${productIdToFind}):`, err.response ? err.response.data : err.message);
-        return false; // Trả về false nếu có lỗi để tránh treo hệ thống
+        console.error('Lỗi kiểm tra đơn hàng (chi tiết):', err.response ? err.response.data : err.message);
+    return false;
     }
 }
 

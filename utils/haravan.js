@@ -1,5 +1,6 @@
 const axios = require('axios');
 
+// Đảm bảo các biến môi trường này được cấu hình trên Render
 const ACCESS_TOKEN = process.env.HARAVAN_ACCESS_TOKEN || '8D69E2B91FDF0D073CAC0126CCA36B924276EB0DFF55C7F76097CFD8283920BE';
 const SHOP_DOMAIN = process.env.HARAVAN_SHOP_DOMAIN || 'neko-chin-shop-5.myharavan.com';
 
@@ -13,7 +14,7 @@ const SHOP_DOMAIN = process.env.HARAVAN_SHOP_DOMAIN || 'neko-chin-shop-5.myharav
  */
 async function hasPurchasedProduct(customerPhone, productIdToFind) {
     if (!customerPhone || !productIdToFind) {
-        console.warn('Thiếu số điện thoại hoặc Product ID để kiểm tra mua hàng.');
+        console.warn('[Haravan Util] Thiếu số điện thoại hoặc Product ID để kiểm tra mua hàng.');
         return false;
     }
 
@@ -73,22 +74,23 @@ async function hasPurchasedProduct(customerPhone, productIdToFind) {
         return false;
 
     } catch (err) {
-    console.error(`[Haravan Util] Lỗi kiểm tra mua hàng cho SĐT ${customerPhone}, SP ${productIdToFind} (chi tiết):`);
-    // In ra toàn bộ đối tượng lỗi để không bỏ sót thông tin
-    console.error(err);
-    // Nếu là lỗi Axios, in thêm phản hồi từ server nếu có
-    if (err.response) {
-        console.error('Haravan API Response Error Data:', err.response.data);
-        console.error('Haravan API Response Status:', err.response.status);
-        console.error('Haravan API Response Headers:', err.response.headers);
-    } else if (err.request) {
-        // Request được tạo nhưng không nhận được phản hồi (ví dụ: mạng)
-        console.error('Haravan API Request Error (no response):', err.request);
-    } else {
-        // Lỗi khi thiết lập request
-        console.error('Haravan API Config/Setup Error:', err.message);
+        console.error(`[Haravan Util] Lỗi kiểm tra mua hàng cho SĐT ${customerPhone}, SP ${productIdToFind} (chi tiết):`);
+        // In ra toàn bộ đối tượng lỗi để không bỏ sót thông tin
+        console.error(err);
+        // Nếu là lỗi Axios, in thêm phản hồi từ server nếu có
+        if (err.response) {
+            console.error('Haravan API Response Error Data:', err.response.data);
+            console.error('Haravan API Response Status:', err.response.status);
+            console.error('Haravan API Response Headers:', err.response.headers);
+        } else if (err.request) {
+            // Request được tạo nhưng không nhận được phản hồi (ví dụ: mạng)
+            console.error('Haravan API Request Error (no response):', err.request);
+        } else {
+            // Lỗi khi thiết lập request
+            console.error('Haravan API Config/Setup Error:', err.message);
+        }
+        return false;
     }
-    return false;
 }
 
 module.exports = { hasPurchasedProduct };
